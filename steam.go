@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bufio"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -8,6 +9,30 @@ import (
 	"strconv"
 	"time"
 )
+
+func loadBlacklist() []string {
+	blacklist := []string{}
+	// check for the blacklist file
+	if _, err := os.Stat("blacklist.txt"); err == nil {
+		// blacklist file exists, let's load it in
+		file, err := os.Open("blacklist.txt")
+		if err != nil {
+			panic(err)
+		}
+		defer file.Close()
+
+		// scan the file line by line
+
+		scanner := bufio.NewScanner(file)
+		for scanner.Scan() {
+			blacklist = append(blacklist, scanner.Text())
+		}
+
+		return blacklist
+	}
+
+	return blacklist
+}
 
 func getSteamGamesList() []SteamGame {
 	games := []SteamGame{}

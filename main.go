@@ -6,6 +6,7 @@ import (
 	"fmt"
 	mathRand "math/rand"
 	"os"
+	"slices"
 	"strconv"
 	"strings"
 	"time"
@@ -51,6 +52,7 @@ func init() {
 
 func main() {
 	games := getSteamGamesList()
+	blacklist := loadBlacklist()
 
 	// ask the user the minimum playtime for a game to be considered
 	var maxPlaytime int
@@ -71,25 +73,25 @@ func main() {
 		break
 	}
 
-	var randomGame SteamGame
+	var randomGameId string
 	for {
 		// choose a random game
-		randomGame = games[mathRand.Intn(len(games))]
+		randomGame := games[mathRand.Intn(len(games))]
+		randomGameId = strconv.Itoa(randomGame.Appid)
 
 		// check if the game is below the max playtime
-		if randomGame.PlaytimeForever <= maxPlaytime {
+		if randomGame.PlaytimeForever <= maxPlaytime && !slices.Contains(blacklist, randomGameId) {
 			break
 		}
 
 		// if not, try again
 	}
 
-	gameID := strconv.Itoa(randomGame.Appid)
 	fmt.Println("Found a game to install, starting install now")
-	installGame(gameID)
+	installGame(randomGameId)
 
 	for {
-		installed, wait, percentageStr := gameInstalled(gameID)
+		installed, wait, percentageStr := gameInstalled(randomGameId)
 		if wait == -1 {
 			fmt.Println("Error checking if game is installed")
 			os.Exit(1)
@@ -104,5 +106,5 @@ func main() {
 
 	fmt.Println("Game installed, starting in 2 seconds")
 	time.Sleep(2 * time.Second)
-	startGame(gameID)
+	startGame(randomGameId)
 }
