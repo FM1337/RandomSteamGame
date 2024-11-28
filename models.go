@@ -3,9 +3,15 @@ package main
 type SteamResponse struct {
 	Response struct {
 		Games []struct {
-			Appid int `json:"appid"`
+			Appid           int `json:"appid"`
+			PlaytimeForever int `json:"playtime_forever"`
 		} `json:"games"`
 	} `json:"response"`
+}
+
+type SteamGame struct {
+	Appid           int `json:"appid"`
+	PlaytimeForever int `json:"playtime_forever"`
 }
 
 type SteamClientResponse struct {

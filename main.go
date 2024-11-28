@@ -52,9 +52,39 @@ func init() {
 func main() {
 	games := getSteamGamesList()
 
-	// choose a random game
-	randomGame := games[mathRand.Intn(len(games))]
-	gameID := strconv.Itoa(randomGame)
+	// ask the user the minimum playtime for a game to be considered
+	var maxPlaytime int
+	for {
+		fmt.Print("Please enter a max playtime minutes for games that should be considered to be picked from: ")
+		_, err := fmt.Scan(&maxPlaytime)
+
+		if err != nil {
+			fmt.Println("Invalid input, please enter a number")
+			continue
+		}
+
+		if maxPlaytime < 0 {
+			fmt.Println("Invalid input, please enter a positive number")
+			continue
+		}
+
+		break
+	}
+
+	var randomGame SteamGame
+	for {
+		// choose a random game
+		randomGame = games[mathRand.Intn(len(games))]
+
+		// check if the game is below the max playtime
+		if randomGame.PlaytimeForever <= maxPlaytime {
+			break
+		}
+
+		// if not, try again
+	}
+
+	gameID := strconv.Itoa(randomGame.Appid)
 	fmt.Println("Found a game to install, starting install now")
 	installGame(gameID)
 

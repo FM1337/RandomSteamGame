@@ -1,41 +1,36 @@
 package main
 
 import (
-	"bufio"
 	"encoding/json"
 	"fmt"
 	"net/http"
 	"os"
 	"strconv"
-	"strings"
 	"time"
 )
 
-func getSteamGamesList() []int {
-	games := []int{}
+func getSteamGamesList() []SteamGame {
+	games := []SteamGame{}
 	// check for the games list file
-	if _, err := os.Stat("games.txt"); err == nil {
+	if _, err := os.Stat("games.json"); err == nil {
 		// games list file exists, check if it's older than 3 days
-		fileInfo, err := os.Stat("games.txt")
+		fileInfo, err := os.Stat("games.json")
 		if err != nil {
 			panic(err)
 		}
 		if time.Since(fileInfo.ModTime()).Hours() < 72 {
 			// games list file is less than 3 days old, don't update it and instead open it into an array of ints
-			file, err := os.Open("games.txt")
+			file, err := os.Open("games.json")
 			if err != nil {
 				panic(err)
 			}
 			defer file.Close()
 
-			scanner := bufio.NewScanner(file)
-			for scanner.Scan() {
-				game, err := strconv.Atoi(scanner.Text())
-				if err != nil {
-					panic(err)
-				}
-				games = append(games, game)
+			err = json.NewDecoder(file).Decode(&games)
+			if err != nil {
+				panic(err)
 			}
+
 			return games
 		}
 	}
@@ -56,11 +51,16 @@ func getSteamGamesList() []int {
 	}
 
 	for _, game := range response.Response.Games {
-		games = append(games, game.Appid)
+		games = append(games, game)
 	}
 
 	// Write the games list to a file (newline separated)
-	err = os.WriteFile("games.txt", []byte(strings.Trim(strings.Join(strings.Fields(fmt.Sprint(games)), "\n"), "[]")), 0644)
+	data, err := json.Marshal(games)
+	if err != nil {
+		panic(err)
+	}
+
+	err = os.WriteFile("games.json", data, 0644)
 	if err != nil {
 		panic(err)
 	}
